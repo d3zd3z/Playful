@@ -59,16 +59,8 @@ class ViewController: NSViewController {
         if let _ = keymap[event.keyCode] {
             keysDown.remove(event.keyCode)
             if keysDown.isEmpty {
-                // Convert the stroke to a string.
-                var text = ""
-                var bit = UInt32(1)
-                for ch in fullSteno.characters {
-                    if (strokeKeys & bit) != 0 {
-                        text.append(ch)
-                    }
-                    bit <<= 1
-                }
-                print("Stroke:", text)
+                let st = Stroke(from: strokeKeys)
+                print("Stroke:", st.toString())
                 strokeKeys = 0
             }
         }
@@ -79,8 +71,6 @@ class ViewController: NSViewController {
         print("state: ", captureButton.state)
     }
 
-    let fullSteno = "STKPWHRAO*EUFRPBLGTSDZ#"
-  
     // Grumble. Swift 3.0 (Xcode 8.2.1) requires all of these explicit
     // types to avoid aborting because the inference is too
     // complicated (despite the top-level type being specified).
