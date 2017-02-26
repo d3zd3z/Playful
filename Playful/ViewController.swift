@@ -58,7 +58,7 @@ class ViewController: NSViewController {
     override func keyUp(with event: NSEvent) {
         if let _ = keymap[event.keyCode] {
             keysDown.remove(event.keyCode)
-            if keysDown.isEmpty {
+            if keysDown.isEmpty && strokeKeys != 0 {
                 let st = Stroke(from: strokeKeys)
                 print("Stroke:", st.toString())
                 strokeKeys = 0
