@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Stroke {
+struct Stroke: CustomStringConvertible {
     var value: UInt32 = 0
     
     init(from v: UInt32) {
@@ -16,7 +16,7 @@ struct Stroke {
     }
     
     // The string value is a canonical representation of the stroke.
-    func toString() -> String {
+    var description: String {
         var result = ""
         var base = Stroke.fullSteno
 

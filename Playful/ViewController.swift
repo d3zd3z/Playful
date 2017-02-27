@@ -60,7 +60,7 @@ class ViewController: NSViewController {
             keysDown.remove(event.keyCode)
             if keysDown.isEmpty && strokeKeys != 0 {
                 let st = Stroke(from: strokeKeys)
-                print("Stroke:", st.toString())
+                print("Stroke:", st)
                 strokeKeys = 0
             }
         }
