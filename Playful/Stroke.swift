@@ -14,6 +14,64 @@ struct Stroke: CustomStringConvertible {
     init(from v: UInt32) {
         value = v
     }
+
+    // Parse a sequence of strokes, possibly separated by "/"
+    // characters, returning the sequence if that makes sense.
+    static func parseStrokes(_ text: String) throws -> [Stroke] {
+        let fullChars = Array(fullSteno.characters)
+
+        var result = [Stroke]()
+
+        // The parser matches characters in the input with characters
+        // in the steno string.
+        var pos = 0
+        var bits = UInt32(0)
+
+        // TODO: We don't handle any numbers yet.
+        for ch in text.characters {
+            if ch == "/" {
+                if bits == 0 {
+                    throw StrokeError.Simple("Empty stroke")
+                }
+                result.append(Stroke(from: bits))
+                pos = 0
+                bits = 0
+                continue
+            }
+            if ch == "-" {
+                // Technically, this should be at position 7, but one
+                // of the lessons includes a hyphen after a *.
+                if pos >= 10 {
+                    throw StrokeError.Simple("Invalid '-' position in \(text)")
+                }
+                pos = 12
+                continue
+            }
+
+            while pos < fullChars.count && fullChars[pos] != ch {
+                pos += 1
+            }
+            if pos == fullChars.count {
+                throw StrokeError.Simple("Invalid character: \(ch) in \(text)")
+            }
+
+            bits |= UInt32(1) << UInt32(pos)
+        }
+        if bits == 0 {
+            throw StrokeError.Simple("Empty stroke")
+        }
+        result.append(Stroke(from: bits))
+
+        return result
+    }
+
+    static func parseStroke(_ text: String) throws -> Stroke {
+        let strokes = try parseStrokes(text)
+        if strokes.count != 1 {
+            throw StrokeError.Simple("Expecting a single stroke \(text)")
+        }
+        return strokes[0]
+    }
     
     // The string value is a canonical representation of the stroke.
     var description: String {
@@ -59,4 +117,8 @@ struct Stroke: CustomStringConvertible {
     static let num: UInt32 = 0x400000
     static let nums: UInt32 = 0x551ab
     static let fStroke: UInt32 = 0x1000
+}
+
+enum StrokeError : Error {
+    case Simple(String)
 }
