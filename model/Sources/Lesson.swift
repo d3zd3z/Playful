@@ -1,6 +1,7 @@
 // A single steno lesson.
 
 import Foundation
+import SQLite
 
 class Lesson {
     var problems = [Problem]()
@@ -59,12 +60,40 @@ class Lesson {
                     tags: l["tags"]!,
                     problems: probs))
 
-                print(subLessons[subLessons.count-1])
+                // print(subLessons[subLessons.count-1])
             }
         } catch {
             print("Unable to load lesson", error)
             // TODO: Cleaner stop
             exit(1)
+        }
+    }
+
+    func setupDb(db: Connection) throws {
+        let words = Table("words")
+        let strokes = Expression<String>("strokes")
+        let seq = Expression<Int>("seq")
+        let english = Expression<String>("english")
+        let duration = Expression<Float64>("duration")
+
+        try db.run(words.create { t in
+            t.column(strokes, primaryKey: true)
+            t.column(seq)
+            t.column(english)
+            t.column(duration)
+        })
+
+        var s = 1
+        try db.transaction {
+            for sub in self.subLessons {
+                for prob in sub.problems {
+                    let text = prob.strokes.map({ (_ elt: Stroke) -> String in
+                        String(describing: elt)
+                    }).joined(separator: "/")
+                    try db.run(words.insert(strokes <- text, seq <- s, english <- prob.english, duration <- 60.0))
+                    s += 1
+                }
+            }
         }
     }
 }
