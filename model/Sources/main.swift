@@ -3,12 +3,13 @@
 import SQLite
 
 print("Initializing lesson\n")
-var lesson = Lesson(dictPath: "../Playful/dict-canonical.json",
-   lessonPath: "../Playful/lessons.json")
+
+// var lesson = Lesson(dictPath: "../Playful/dict-canonical.json",
+//    lessonPath: "../Playful/lessons.json")
 
 let db = try Connection("status.sqlite3")
-
-try lesson.setupDb(db: db)
+try Lesson.create(db: db, dictPath: "../Playful/dict-canonical.json",
+    lessonPath: "../Playful/lessons.json")
 
 /*
 let words = Table("words")
