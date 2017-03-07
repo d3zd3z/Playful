@@ -17,6 +17,30 @@ class Lesson {
         self.db = db
     }
 
+    func getNext() throws -> Word? {
+        // This can be done as a single query, but it is not
+        // expressible with the query language given, so just do two
+        // queries.  It doesn't need to be all that fast.
+        for row in try db.prepare(words // .select(strokes, words, seq, next, interval)
+                .filter(next != nil)
+                .filter(next < Date())
+                .order(next, seq)
+                .limit(1)) {
+            // print("A Got row: \(row)")
+            return try Word(lesson: self, row: row)
+        }
+
+        for row in try db.prepare(words // .select(strokes, words, seq, next, interval)
+                .filter(next == nil)
+                .order(seq)
+                .limit(1)) {
+            // print("B Got row: \(row)")
+            return try Word(lesson: self, row: row)
+        }
+
+        return nil
+    }
+
     static func create(db: Connection, dictPath: String, lessonPath: String) throws {
         let problems = try loadProblems(dictPath)
         let subLessons = try loadLessons(problems, lessonPath)
@@ -110,6 +134,22 @@ class Lesson {
                     s += 1
                 }
             }
+        }
+    }
+
+    struct Word {
+        let strokes: [Stroke]
+        let english: String
+        let seq: Int
+        let next: Date?
+        let interval: Float64
+
+        init(lesson: Lesson, row: Row) throws {
+            strokes = try Stroke.parseStrokes(row[lesson.strokes])
+            english = row[lesson.english]
+            seq = row[lesson.seq]
+            next = row[lesson.next]
+            interval = row[lesson.interval]
         }
     }
 }

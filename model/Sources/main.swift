@@ -15,7 +15,9 @@ if !FileManager.default.fileExists(atPath: "status.sqlite3") {
 }
 
 let db = try Connection("status.sqlite3")
+// db.trace { SQL in print(SQL) }
 var lesson = Lesson(db: db)
+print(try lesson.getNext())
 
 /*
 let words = Table("words")
