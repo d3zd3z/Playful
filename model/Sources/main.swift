@@ -1,15 +1,21 @@
 // Experiment with the steno engine, separate from the GUI.
 
 import SQLite
+import Foundation
 
 print("Initializing lesson\n")
 
 // var lesson = Lesson(dictPath: "../Playful/dict-canonical.json",
 //    lessonPath: "../Playful/lessons.json")
 
+if !FileManager.default.fileExists(atPath: "status.sqlite3") {
+    let db = try Connection("status.sqlite3")
+    try Lesson.create(db: db, dictPath: "../Playful/dict-canonical.json",
+        lessonPath: "../Playful/lessons.json")
+}
+
 let db = try Connection("status.sqlite3")
-try Lesson.create(db: db, dictPath: "../Playful/dict-canonical.json",
-    lessonPath: "../Playful/lessons.json")
+var lesson = Lesson(db: db)
 
 /*
 let words = Table("words")
