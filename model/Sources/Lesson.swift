@@ -87,11 +87,12 @@ class Lesson {
 
         try db.run(lesson.words.create { t in
             t.column(lesson.strokes, primaryKey: true)
-            t.column(lesson.seq)
+            t.column(lesson.seq, unique: true)
             t.column(lesson.english)
             t.column(lesson.next)
             t.column(lesson.interval)
         })
+	try db.run(lesson.words.createIndex(lesson.next, lesson.seq))
 
         var s = 1
         try db.transaction {
