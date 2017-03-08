@@ -41,6 +41,11 @@ class Lesson {
         return nil
     }
 
+    func update(seq theSeq: Int, next newNext: Date, interval newInterval: Float64) throws {
+        let context = words.filter(seq == theSeq)
+        try db.run(context.update(next <- newNext, interval <- newInterval))
+    }
+
     static func create(db: Connection, dictPath: String, lessonPath: String) throws {
         let problems = try loadProblems(dictPath)
         let subLessons = try loadLessons(problems, lessonPath)
@@ -130,19 +135,20 @@ class Lesson {
                         lesson.seq <- s,
                         lesson.english <- prob.english,
                         lesson.next <- nil,
-                        lesson.interval <- 10 * 60))
+                        lesson.interval <- 15))
                     s += 1
                 }
             }
         }
     }
 
-    struct Word {
+    class Word {
         let strokes: [Stroke]
         let english: String
         let seq: Int
         let next: Date?
         let interval: Float64
+        let parent: Lesson
 
         init(lesson: Lesson, row: Row) throws {
             strokes = try Stroke.parseStrokes(row[lesson.strokes])
@@ -150,6 +156,35 @@ class Lesson {
             seq = row[lesson.seq]
             next = row[lesson.next]
             interval = row[lesson.interval]
+            parent = lesson
+        }
+
+        // Update the word for a given user response.  This is given
+        // as an integer giving the level of confidence, with 0
+        // indicating the word was unknown.
+        func update(level: Int) throws {
+            // Specific notes, the new interval is taken from now, but
+            // doesn't currently use the SM2 way of increasing the
+            // interval based on the actual time since the word was
+            // given.  This may be desired at some point.
+            let now = Date()
+            let newInterval: Float64
+            switch level {
+            case 0:
+                newInterval = interval * 0.5
+            case 1:
+                newInterval = interval * 1.2
+            case 2:
+                newInterval = interval * 2.0
+            case 3:
+                newInterval = interval * 3.0
+            default:
+                print("Unknown response, keeping interval the same")
+                newInterval = interval
+            }
+
+            try parent.update(seq: seq, next: now.addingTimeInterval(newInterval),
+                interval: newInterval)
         }
     }
 }

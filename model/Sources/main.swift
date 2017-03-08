@@ -15,9 +15,16 @@ if !FileManager.default.fileExists(atPath: "status.sqlite3") {
 }
 
 let db = try Connection("status.sqlite3")
-// db.trace { SQL in print(SQL) }
+db.trace { SQL in print(SQL) }
 var lesson = Lesson(db: db)
-print(try lesson.getNext())
+while let word = try lesson.getNext() {
+    print("Learn \(word.english) is \(word.strokes) (1, don't know, 4 know fully)")
+    if let resp = readLine() {
+        try word.update(level: Int(resp)! - 1)
+    } else {
+        break
+    }
+}
 
 /*
 let words = Table("words")
