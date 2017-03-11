@@ -7,11 +7,33 @@
 //
 
 import Cocoa
+import SQLite
 
 class ViewController: NSViewController {
 
+    var db: Connection?
+    var lesson: Lesson?
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        // The path to the database is hardcoded for now.
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let dbPath = home.appendingPathComponent("Documents/Playful.sqlite")
+
+        do {
+            if !FileManager.default.fileExists(atPath: dbPath.path) {
+                let dictPath = Bundle.main.path(forResource: "dict-canonical", ofType: "json")!
+                let lessonPath = Bundle.main.path(forResource: "lessons", ofType: "json")!
+                let db = try Connection(dbPath.path)
+                try Lesson.create(db: db, dictPath: dictPath, lessonPath: lessonPath)
+            }
+
+            db = try Connection(dbPath.path)
+            lesson = Lesson(db: db!)
+        } catch {
+            print("Unable to setup database: \(error)")
+        }
 
         // This block seems to capture the key events.  However if System
         // Preferences -> Keyboard -> Shortcuts -> Full Key Access is set to

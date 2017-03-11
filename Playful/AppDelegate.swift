@@ -19,10 +19,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let url = URL(fileURLWithPath: name)
         print(url)
         do {
-            let data = try Data(contentsOf: url, options: [])
-            print("data:", data.count)
-            let obj = try JSONSerialization.jsonObject(with: data, options: []) as! Dictionary<String, String>
-            print("obj:", obj)
+            let home = FileManager.default.homeDirectoryForCurrentUser
+            print(home.appendingPathComponent("Documents/Playful.sqlite"))
         } catch {
             print("Unable to load data")
             // TODO: Stop the app
